@@ -1,21 +1,30 @@
 package by.matusievic.imagestorage.download
 
-import awscala.s3._
 import by.matusievic.imagestorage.common.S3Bucket._
+import by.matusievic.imagestorage.metadata.MetadataSearch
 
 import scala.util.Random
 
 class FileDownloader {
-  def findRandom(): Option[S3Object] = {
+  private val metadataSearch = MetadataSearch()
+
+  def findRandom(): Option[DownloadResponse] = {
     val summaries = bucket.objectSummaries()
-    val index = Random.nextInt(summaries.length)
-    bucket.getObject(summaries(index).getKey)
+    val maybeIndex = Option.when(summaries.nonEmpty)(Random.nextInt(summaries.length))
+    val maybeKey = maybeIndex.map(summaries(_).getKey)
+    for {
+      key <- maybeKey
+      s3object <- bucket.getObject(key)
+      metadata <- metadataSearch.findByName(key)
+    } yield DownloadResponse(metadata, s3object)
   }
 
-  def findByName(name: String): Option[S3Object] = {
-    bucket.getObject(name)
+  def findByName(name: String): Option[DownloadResponse] = {
+    for {
+      s3object <- bucket.getObject(name)
+      metadata <- metadataSearch.findByName(name)
+    } yield DownloadResponse(metadata, s3object)
   }
-
 }
 
 object FileDownloader {
