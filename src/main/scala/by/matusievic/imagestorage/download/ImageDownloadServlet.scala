@@ -1,27 +1,34 @@
 package by.matusievic.imagestorage.download
 
 import by.matusievic.imagestorage.common.Header._
-import com.amazonaws.util.IOUtils
+import by.matusievic.imagestorage.common.Implicits
 import org.scalatra._
 
-class ImageDownloadServlet extends ScalatraServlet {
+import scala.concurrent.ExecutionContext
+
+class ImageDownloadServlet extends ScalatraServlet with FutureSupport {
   private val fileDownloader: FileDownloader = FileDownloader()
 
+  override protected implicit def executor: ExecutionContext = Implicits.ec
+
   get("/random") {
-    fileDownloader.findRandom() match {
-      case Some(file) => fileRoResponse(file)
-      case None => NotFound("Image Not Found")
-    }
+    fileDownloader.findRandom()
+      .map(fileToResponse)
+      .recover(_ => NotFound("Image Not Found"))
   }
 
   get("/") {
-    request.parameters.get("name").filter(_.nonEmpty).flatMap(fileDownloader.findByName) match {
-      case Some(file) => fileRoResponse(file)
-      case None => NotFound("Image Not Found")
+    request.parameters.get("name") match {
+      case Some(name) =>
+        fileDownloader.findByName(name)
+          .map(fileToResponse)
+          .recover(_ => NotFound("Image Not Found"))
+      case None =>
+        BadRequest(<p>Hey! You forgot to supply an email.</p>)
     }
   }
 
-  private def fileRoResponse(res: DownloadResponse) = Ok(
+  private def fileToResponse(res: DownloadResponse) = Ok(
     body = res.bucketObject.content,
     headers = Map(
       ContentType -> res.bucketObject.contentType,

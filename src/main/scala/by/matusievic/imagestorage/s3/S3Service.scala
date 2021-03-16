@@ -1,31 +1,49 @@
 package by.matusievic.imagestorage.s3
 
+import akka.stream.alpakka.s3.MultipartUploadResult
+import akka.stream.alpakka.s3.scaladsl.S3
+import akka.stream.scaladsl._
+import akka.util.ByteString
+import by.matusievic.imagestorage.common.Implicits._
 import by.matusievic.imagestorage.s3.S3BucketConfig._
-import com.amazonaws.services.s3.model.ObjectMetadata
-import com.amazonaws.util.IOUtils
 
+import scala.concurrent.Future
 import scala.util.Random
 
 trait S3Service {
-  def put(key: String, bytes: Array[Byte]): Unit
+  def put(key: String, bytes: Array[Byte]): Future[MultipartUploadResult]
 
-  def find(key: String): Option[BucketObject]
+  def find(key: String): Future[BucketObject]
 
-  def randomKey: Option[String]
+  def randomKey: Future[String]
 }
 
 class S3ServiceImpl extends S3Service {
-  override def put(key: String, bytes: Array[Byte]): Unit = {
-    bucket.putObject(key, bytes, new ObjectMetadata())
+  override def put(key: String, bytes: Array[Byte]): Future[MultipartUploadResult] = {
+    Source
+      .single(ByteString(bytes))
+      .runWith(S3.multipartUpload(BucketName, key))
   }
 
-  override def find(key: String): Option[BucketObject] = {
-    bucket.getObject(key).map(o => BucketObject(IOUtils.toByteArray(o.content), o.metadata.getContentType))
+  override def find(key: String): Future[BucketObject] = {
+    S3
+      .download(BucketName, key)
+      .runWith(Sink.head)
+      .flatMap {
+        case Some((content, metadata)) =>
+          for {
+            contentType <- Future(metadata.contentType.get)
+            bytes <- content.runWith(Sink.head[ByteString])
+          } yield BucketObject(bytes.toArray, contentType)
+      }
   }
 
-  override def randomKey: Option[String] = {
-    val summaries = bucket.objectSummaries()
-    Option.when(summaries.nonEmpty)(Random.nextInt(summaries.length)).map(summaries(_).getKey)
+  override def randomKey: Future[String] = {
+    S3
+      .listBucket(BucketName, None)
+      .runWith(Sink.seq)
+      .filter(_.nonEmpty)
+      .map(s => s(Random.nextInt(s.length)).getKey)
   }
 }
 

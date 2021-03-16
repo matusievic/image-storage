@@ -1,6 +1,6 @@
 package by.matusievic.imagestorage.sns
 
-import by.matusievic.imagestorage.common.AkkaConfig._
+import by.matusievic.imagestorage.common.Implicits._
 import com.github.matsluni.akkahttpspi.AkkaHttpClient
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 import software.amazon.awssdk.regions.Region

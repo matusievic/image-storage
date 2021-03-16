@@ -3,8 +3,10 @@ package by.matusievic.imagestorage.metadata
 import DbConfig._
 import doobie.implicits._
 
+import scala.concurrent.Future
+
 trait MetadataSearch {
-  def findByName(name: String): Option[ImageMetadata]
+  def findByName(name: String): Future[ImageMetadata]
 }
 
 object MetadataSearch {
@@ -13,7 +15,7 @@ object MetadataSearch {
 
 
 trait MetadataRepository extends MetadataSearch {
-  def insertMetadata(metadata: ImageMetadata): Unit
+  def insertMetadata(metadata: ImageMetadata): Future[Int]
 }
 
 object MetadataRepository {
@@ -23,19 +25,19 @@ object MetadataRepository {
 
 
 class MetadataRepositoryImpl extends MetadataRepository {
-  override def findByName(name: String): Option[ImageMetadata] = {
+  override def findByName(name: String): Future[ImageMetadata] = {
     sql"SELECT * FROM image_metadata WHERE name = $name"
       .query[ImageMetadata]
-      .option
+      .unique
       .transact(aux)
-      .unsafeRunSync
+      .unsafeToFuture
   }
 
-  override def insertMetadata(metadata: ImageMetadata): Unit = {
+  override def insertMetadata(metadata: ImageMetadata): Future[Int] = {
     sql"""
     INSERT INTO image_metadata (name, size_in_bytes, upload_date)
     VALUES (${metadata.name}, ${metadata.sizeInBytes}, ${metadata.uploadDate.toString})
-    """.update.run.transact(aux).unsafeRunSync
+    """.update.run.transact(aux).unsafeToFuture
   }
 
   private def init() = {
