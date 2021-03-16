@@ -20,11 +20,23 @@ class IndexServlet extends ScalatraServlet {
             <input type="submit" class="btn btn-primary" value="Download"/>
           </p>
         </form>,
-        <form action={url("/download/random")} method="get" enctype="multipart/form-data">
+        <form action={url("/download/random")} method="get">
           <p>
             <input type="submit" class="btn btn-primary" value="Random"/>
           </p>
         </form>,
+        <form action={url("/sns/subscribe")} method="post">
+          <p>Email to subscribe:
+            <input type="text" name="email"/>
+            <input type="submit" class="btn btn-primary" value="Subscribe"/>
+          </p>
+        </form>,
+        <form action={url("/sns/unsubscribe")} method="post">
+          <p>Email to unsubscribe:
+            <input type="text" name="email"/>
+            <input type="submit" class="btn btn-primary" value="Unsubscribe"/>
+          </p>
+        </form>
       )
     )
   }

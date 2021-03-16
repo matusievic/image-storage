@@ -1,5 +1,6 @@
 import by.matusievic.imagestorage.download.ImageDownloadServlet
 import by.matusievic.imagestorage.index.IndexServlet
+import by.matusievic.imagestorage.sns.SnsServlet
 import by.matusievic.imagestorage.upload.ImageUploadServlet
 import org.scalatra._
 
@@ -10,5 +11,6 @@ class ScalatraBootstrap extends LifeCycle {
     context.mount(new IndexServlet, "/")
     context.mount(new ImageUploadServlet, "/upload")
     context.mount(new ImageDownloadServlet, "/download")
+    context.mount(new SnsServlet, "/sns")
   }
 }

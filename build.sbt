@@ -15,8 +15,11 @@ lazy val hello = (project in file("."))
       "org.eclipse.jetty" % "jetty-webapp" % "9.2.15.v20160210" % "container;compile",
       "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided",
       "com.github.seratch" %% "awscala-s3" % "0.8.+",
-      "org.tpolecat" %% "doobie-core"      % "0.9.0",
-      "org.tpolecat" %% "doobie-postgres"  % "0.9.0"
+      "org.tpolecat" %% "doobie-core" % "0.9.0",
+      "org.tpolecat" %% "doobie-postgres" % "0.9.0",
+      "com.lightbend.akka" %% "akka-stream-alpakka-sns" % "2.0.2",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.31",
+      "com.typesafe.akka" %% "akka-http" % "10.1.11"
     ),
   )
 
