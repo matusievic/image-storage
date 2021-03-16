@@ -1,6 +1,6 @@
 package by.matusievic.imagestorage.metadata
 
-import by.matusievic.imagestorage.common.Db._
+import DbConfig._
 import doobie.implicits._
 
 trait MetadataSearch {

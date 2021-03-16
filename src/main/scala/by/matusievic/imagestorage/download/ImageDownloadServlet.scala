@@ -22,9 +22,9 @@ class ImageDownloadServlet extends ScalatraServlet {
   }
 
   private def fileRoResponse(res: DownloadResponse) = Ok(
-    body = IOUtils.toByteArray(res.s3Object.content),
+    body = res.bucketObject.content,
     headers = Map(
-      ContentType -> res.s3Object.getObjectMetadata.getContentType,
+      ContentType -> res.bucketObject.contentType,
       ContentDisposition -> s"attachment; filename=${res.metadata.uploadDate}_${res.metadata.name}"
     )
   )

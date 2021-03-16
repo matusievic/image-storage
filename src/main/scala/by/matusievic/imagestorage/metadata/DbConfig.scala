@@ -1,11 +1,11 @@
-package by.matusievic.imagestorage.common
+package by.matusievic.imagestorage.metadata
 
 import cats.effect.{ContextShift, IO}
 import doobie.util.ExecutionContexts
 import doobie.util.transactor.Transactor
 import doobie.util.transactor.Transactor.Aux
 
-object Db {
+object DbConfig {
   private val host = sys.env.getOrElse("DB_HOST", "UNKNOWN")
   private val database = sys.env.getOrElse("DB_NAME", "UNKNOWN")
   private val port = sys.env.getOrElse("DB_PORT", "UNKNOWN")
