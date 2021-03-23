@@ -20,6 +20,7 @@ lazy val hello = (project in file("."))
       "org.tpolecat" %% "doobie-postgres" % "0.9.0",
       "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion,
       "com.lightbend.akka" %% "akka-stream-alpakka-sns" % alpakkaVersion,
+      "com.lightbend.akka" %% "akka-stream-alpakka-awslambda" % alpakkaVersion,
       "com.typesafe.akka" %% "akka-stream" % akkaStreamVersion
     ),
   )

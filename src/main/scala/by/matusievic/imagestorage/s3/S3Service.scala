@@ -1,10 +1,11 @@
 package by.matusievic.imagestorage.s3
 
-import akka.stream.alpakka.s3.MultipartUploadResult
+import akka.stream.alpakka.s3.{BucketAccess, MultipartUploadResult}
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.scaladsl._
 import akka.util.ByteString
 import by.matusievic.imagestorage.common.Implicits._
+import by.matusievic.imagestorage.lamda.LambdaService
 import by.matusievic.imagestorage.s3.S3BucketConfig._
 
 import scala.concurrent.Future
@@ -19,6 +20,8 @@ trait S3Service {
 }
 
 class S3ServiceImpl extends S3Service {
+  private val lambdaService = LambdaService()
+
   override def put(key: String, bytes: Array[Byte]): Future[MultipartUploadResult] = {
     Source
       .single(ByteString(bytes))
@@ -44,6 +47,11 @@ class S3ServiceImpl extends S3Service {
       .runWith(Sink.seq)
       .filter(_.nonEmpty)
       .map(s => s(Random.nextInt(s.length)).getKey)
+  }
+
+
+  S3.checkIfBucketExists(BucketName).collect {
+    case BucketAccess.NotExists => lambdaService.invoke()
   }
 }
 
